@@ -225,6 +225,6 @@ screens:
         - "Fearlix Website":
             run: /usr/bin/xdg-open https://www.fearlix.com
         - "GitHub Repository":
-            run: /usr/bin/xdg-open https://github.com/fearlix-srl/fearlixos
+            run: /usr/bin/xdg-open https://github.com/Fearlix-SRL/fearlixOS
       description: |
         Fearlix-OS is now installed and ready to use.

@@ -1,8 +1,18 @@
-# BlueBuild Template &nbsp; [![bluebuild build badge](https://github.com/blue-build/template/actions/workflows/build.yml/badge.svg)](https://github.com/blue-build/template/actions/workflows/build.yml)
+# Fearlix-OS &nbsp; [![bluebuild build badge](https://github.com/Fearlix-SRL/fearlixOS/actions/workflows/build.yml/badge.svg)](https://github.com/Fearlix-SRL/fearlixOS/actions/workflows/build.yml)
 
-See the [BlueBuild docs](https://blue-build.org/how-to/setup/) for quick setup instructions for setting up your own repository based on this template.
+Custom Fedora Silverblue image by Fearlix SRL, built with [BlueBuild](https://blue-build.org/) on top of `ghcr.io/ublue-os/silverblue-main`.
 
-After setup, it is recommended you update this README to describe your custom image.
+It adds, among other things:
+
+- GNOME extensions (Pop Shell, GSConnect, Blur my Shell, Caffeine, Color Picker, User Themes, Dash to Dock)
+- Distrobox, Starship, Neovim, Alacritty, Btrfs Assistant, Vorta
+- virtualization tools (libvirt, QEMU/KVM, virt-manager)
+- FiraMono Nerd Font
+- [Livepaper](https://github.com/lucapatarca/livepaper) (disabled by default)
+- the [acer-wmi-battery](https://github.com/frederik-h/acer-wmi-battery) kernel module for the battery health mode on Acer laptops
+- a first-boot setup wizard (yafti) for Flatpaks and optional tweaks
+
+The image configuration lives in [`recipes/recipe.yml`](recipes/recipe.yml).
 
 ## Installation
 
@@ -39,5 +49,5 @@ If build on Fedora Atomic, you can generate an offline ISO with the instructions
 These images are signed with [Sigstore](https://www.sigstore.dev/)'s [cosign](https://github.com/sigstore/cosign). You can verify the signature by downloading the `cosign.pub` file from this repo and running the following command:
 
 ```bash
-cosign verify --key cosign.pub ghcr.io/blue-build/template
+cosign verify --key cosign.pub ghcr.io/fearlix-srl/fearlixos
 ```
