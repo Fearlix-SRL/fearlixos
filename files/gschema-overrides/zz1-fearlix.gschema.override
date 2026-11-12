@@ -1,0 +1,17 @@
+# Default settings for all users (applied only to keys the user never changed).
+# Replaces the "Gnome settings" screen of the old yafti first-boot wizard.
+
+[org.gnome.shell]
+enabled-extensions=['background-logo@fedorahosted.org', 'pop-shell@system76.com', 'dash-to-dock@micxgx.gmail.com', 'caffeine@patapon.info']
+
+[org.gnome.desktop.input-sources]
+show-all-sources=true
+
+[org.gnome.shell.extensions.background-logo]
+logo-file='/usr/share/fearlix-logos/fearlix-light.png'
+logo-file-dark='/usr/share/fearlix-logos/fearlix-dark.png'
+logo-always-visible=true
+logo-size=7.5
+
+[org.gnome.shell.extensions.dash-to-dock]
+hot-keys=false

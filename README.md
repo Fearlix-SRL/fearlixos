@@ -10,7 +10,9 @@ It adds, among other things:
 - FiraMono Nerd Font
 - [Livepaper](https://github.com/lucapatarca/livepaper) (disabled by default)
 - the [acer-wmi-battery](https://github.com/frederik-h/acer-wmi-battery) kernel module for the battery health mode on Acer laptops
-- a first-boot setup wizard (yafti) for Flatpaks and optional tweaks
+- core GNOME and system Flatpaks installed automatically, with Fearlix GNOME defaults
+
+After installing, run `ujust fearlix-setup` to pick optional Flatpak apps and extras (distrobox containers, Starship, Livepaper). The single steps are also available as `ujust fearlix-apps` and `ujust fearlix-extras`.
 
 The image configuration lives in [`recipes/recipe.yml`](recipes/recipe.yml).
 
