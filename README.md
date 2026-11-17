@@ -12,7 +12,12 @@ It adds, among other things:
 - the [acer-wmi-battery](https://github.com/frederik-h/acer-wmi-battery) kernel module for the battery health mode on Acer laptops
 - core GNOME and system Flatpaks installed automatically, with Fearlix GNOME defaults
 
-After installing, run `ujust fearlix-setup` to pick optional Flatpak apps and extras (distrobox containers, Starship, Livepaper). The single steps are also available as `ujust fearlix-apps` and `ujust fearlix-extras`.
+After installing, run `ujust fearlix-setup` to pick optional Flatpak apps and extras (distrobox containers, Starship, Livepaper). The single steps are also available as `ujust fearlix-apps`, `ujust fearlix-containers` and `ujust fearlix-extras`.
+
+The dev containers are declared in [`/etc/distrobox/fearlix.ini`](files/system/etc/distrobox/fearlix.ini):
+
+- `ujust fearlix-containers` creates the ones that do not exist yet (pick from a list, or pass names / `all`)
+- `ujust fearlix-containers-update` pulls the images and replaces the containers whose image changed (all existing ones, or pass names)
 
 The image configuration lives in [`recipes/recipe.yml`](recipes/recipe.yml).
 

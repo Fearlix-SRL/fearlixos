@@ -3,7 +3,7 @@
 
 # Run the whole Fearlix-OS optional setup
 [group('fearlix')]
-fearlix-setup: fearlix-apps fearlix-extras
+fearlix-setup: fearlix-apps fearlix-containers fearlix-extras
 
 # Choose and install optional Flatpak apps from Flathub
 [group('fearlix')]
@@ -50,7 +50,87 @@ fearlix-apps:
     done
     flatpak install --system --noninteractive flathub "${IDS[@]}"
 
-# Choose and run optional extras (containers, Starship, Livepaper)
+# Create Fearlix dev containers that do not exist yet: no args = choose, or pass names / "all"
+[group('fearlix')]
+fearlix-containers *NAMES:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    INI=/etc/distrobox/fearlix.ini
+    mapfile -t KNOWN < <(sed -nE 's/^\[(.+)\]$/\1/p' "${INI}")
+    NAMES=({{ NAMES }})
+    if [ "${NAMES[*]:-}" = "all" ]; then
+        NAMES=("${KNOWN[@]}")
+    elif [ "${#NAMES[@]}" -eq 0 ]; then
+        MISSING=()
+        for name in "${KNOWN[@]}"; do
+            podman container exists "${name}" || MISSING+=("${name}")
+        done
+        if [ "${#MISSING[@]}" -eq 0 ]; then
+            echo "All containers already exist. Use 'ujust fearlix-containers-update' to update them."
+            exit 0
+        fi
+        mapfile -t NAMES < <(gum choose --no-limit \
+            --header "Select containers to create (space = select, enter = confirm)" "${MISSING[@]}" || true)
+        if [ "${#NAMES[@]}" -eq 0 ]; then
+            echo "No containers selected."
+            exit 0
+        fi
+    fi
+    for name in "${NAMES[@]}"; do
+        if ! printf '%s\n' "${KNOWN[@]}" | grep -qxF -- "${name}"; then
+            echo "Unknown container '${name}'. Available: ${KNOWN[*]}" >&2
+            exit 1
+        fi
+    done
+    for name in "${NAMES[@]}"; do
+        if podman container exists "${name}"; then
+            echo "${name}: already exists, skipping."
+        else
+            distrobox assemble create --file "${INI}" --name "${name}"
+        fi
+    done
+
+# Pull Fearlix dev container images and replace the containers whose image changed: no args = all existing, or pass names
+[group('fearlix')]
+fearlix-containers-update *NAMES:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    INI=/etc/distrobox/fearlix.ini
+    mapfile -t KNOWN < <(sed -nE 's/^\[(.+)\]$/\1/p' "${INI}")
+    NAMES=({{ NAMES }})
+    if [ "${#NAMES[@]}" -eq 0 ] || [ "${NAMES[*]}" = "all" ]; then
+        NAMES=()
+        for name in "${KNOWN[@]}"; do
+            if podman container exists "${name}"; then NAMES+=("${name}"); fi
+        done
+        if [ "${#NAMES[@]}" -eq 0 ]; then
+            echo "No Fearlix containers found. Create them with 'ujust fearlix-containers'."
+            exit 0
+        fi
+    fi
+    for name in "${NAMES[@]}"; do
+        if ! printf '%s\n' "${KNOWN[@]}" | grep -qxF -- "${name}"; then
+            echo "Unknown container '${name}'. Available: ${KNOWN[*]}" >&2
+            exit 1
+        fi
+    done
+    for name in "${NAMES[@]}"; do
+        if ! podman container exists "${name}"; then
+            echo "${name}: not found, creating."
+            distrobox assemble create --file "${INI}" --name "${name}"
+            continue
+        fi
+        image="$(awk -F= -v s="[${name}]" '$0 == s {f=1; next} /^\[/ {f=0} f && $1 == "image" {print $2; exit}' "${INI}")"
+        podman pull "${image}"
+        if [ "$(podman container inspect --format '{{{{.Image}}' "${name}")" = "$(podman image inspect --format '{{{{.Id}}' "${image}")" ]; then
+            echo "${name}: already up to date."
+        else
+            echo "${name}: new image, replacing container."
+            distrobox assemble create --file "${INI}" --name "${name}" --replace
+        fi
+    done
+
+# Choose and run optional extras (ct alias, Starship, Livepaper)
 [group('fearlix')]
 fearlix-extras:
     #!/usr/bin/env bash
@@ -58,11 +138,6 @@ fearlix-extras:
     mapfile -t SELECTED < <(gum choose --no-limit \
         --header "Select extras (space = select, enter = confirm)" \
         "Add 'ct' alias for distrobox enter" \
-        "Container: base" \
-        "Container: flutter" \
-        "Container: database" \
-        "Container: node" \
-        "Container: go" \
         "Enable Starship prompt" \
         "Enable Livepaper" || true)
     if [ "${#SELECTED[@]}" -eq 0 ]; then
@@ -73,9 +148,6 @@ fearlix-extras:
         case "${choice}" in
             "Add 'ct' alias"*)
                 grep -qs "alias ct=" ~/.bashrc || echo "alias ct='distrobox enter'" >> ~/.bashrc
-                ;;
-            "Container: "*)
-                /usr/bin/mkct "${choice#Container: }"
                 ;;
             "Enable Starship prompt")
                 grep -qs "starship init" ~/.bashrc || echo 'eval "$(starship init bash)"' >> ~/.bashrc
